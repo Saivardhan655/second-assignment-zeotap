@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  backend_app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=second_assignment-database-1
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=weather_app
+    depends_on:
+      - database
+    networks:
+      - my_network
+
+  database:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: weather_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - my_network
+
+volumes:
+  postgres_data:
+
+networks:
+  my_network:
