@@ -1,10 +1,29 @@
 const db = require('../utils/database');
-const  weatherSummaryService=require('./weatherSummaryService')
+const weatherSummaryService = require('./weatherSummaryService');
+const weeklyWeatherSummaryService = require('./weeklyWeatherSummaryService');
+const monthlyWeatherSummaryService = require('./monthlyWeatherSummaryService');
+const { Kafka } = require('kafkajs');
+const nodemailer = require('nodemailer'); // For email alerts
+
+const kafka = new Kafka({
+    clientId: 'weather-app',
+    brokers: [process.env.KAFKA_BROKERS]
+});
+
+const producer = kafka.producer();
+
+// Store user-configurable alert thresholds (e.g., temp > 35°C for 2 consecutive updates)
+const alertConfig = {
+    temperatureThreshold: 35, // degrees Celsius
+    consecutiveUpdates: 2
+};
+
+let consecutiveBreaches = {}; // Store count of breaches per city
 
 // Function to store weather data in the database
 exports.storeWeatherData = async (city, weatherData) => {
     const { temp, feels_like, condition, timestamp } = weatherData;
-    
+
     const query = `
         INSERT INTO weather_data (city, temp, feels_like, condition, timestamp)
         VALUES ($1, $2, $3, $4, $5)
@@ -14,12 +33,84 @@ exports.storeWeatherData = async (city, weatherData) => {
         // Insert data into the database
         await db.query(query, [city, temp, feels_like, condition, new Date(timestamp * 1000)]);
         console.log(`Weather data for ${city} inserted successfully.`);
+
+        // Check if the threshold for temperature is breached
+        checkTemperatureAlert(city, temp);
+
+        // Store daily summary and send Kafka messages
         await weatherSummaryService.storeDailyWeatherSummary();
+        await producer.connect();
+        await producer.send({
+            topic: 'weather-summary',
+            messages: [
+                { value: JSON.stringify({ city, action: 'updateWeekly' }) },
+                { value: JSON.stringify({ city, action: 'updateMonthly' }) }
+            ],
+        });
+        console.log(`Kafka messages sent for ${city} to update weekly and monthly summaries.`);
+
     } catch (err) {
         console.error(`Error storing weather data for ${city}:`, err);
-        throw err; 
+        throw err;
+    } finally {
+        await producer.disconnect();
     }
 };
+
+// Function to check temperature alert threshold and trigger alerts
+function checkTemperatureAlert(city, temp) {
+    // Initialize breach count for the city if it doesn't exist
+    if (!consecutiveBreaches[city]) {
+        consecutiveBreaches[city] = 0;
+    }
+
+    // Check if the temperature exceeds the threshold
+    if (temp > alertConfig.temperatureThreshold) {
+        consecutiveBreaches[city]++;
+
+        // Trigger alert if the threshold is breached for consecutive updates
+        if (consecutiveBreaches[city] >= alertConfig.consecutiveUpdates) {
+            triggerAlert(city, temp);
+        }
+    } else {
+        // Reset the breach count if temperature goes below threshold
+        consecutiveBreaches[city] = 0;
+    }
+}
+
+// Function to trigger alert (can be expanded to send emails)
+function triggerAlert(city, temp) {
+    console.log(`ALERT: Temperature in ${city} has exceeded ${alertConfig.temperatureThreshold}°C for ${alertConfig.consecutiveUpdates} consecutive updates. Current temp: ${temp}°C`);
+
+    // You can expand this to send an email alert
+    sendEmailAlert(city, temp);
+}
+
+// Function to send email alert (optional)
+async function sendEmailAlert(city, temp) {
+    // Configure email transporter (using Gmail as an example)
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER, // Your email address
+            pass: process.env.EMAIL_PASS  // Your email password
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: 'alert@example.com', // Recipient email
+        subject: `Weather Alert for ${city}`,
+        text: `Temperature in ${city} has exceeded ${alertConfig.temperatureThreshold}°C for ${alertConfig.consecutiveUpdates} consecutive updates. Current temp: ${temp}°C`
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email alert sent successfully.');
+    } catch (error) {
+        console.error('Error sending email alert:', error);
+    }
+}
 
 // Function to get the daily summary of weather data for a specific city
 exports.getDailySummary = async (city) => {
@@ -46,7 +137,7 @@ exports.getDailySummary = async (city) => {
 
     try {
         const result = await db.query(query, [city]);
-        
+
         if (result.rows.length === 0) {
             console.log(`No weather data found for ${city} in the past day.`);
             return null;
@@ -55,6 +146,6 @@ exports.getDailySummary = async (city) => {
         return result.rows[0];
     } catch (err) {
         console.error(`Error fetching daily summary for ${city}:`, err);
-        throw err;  
+        throw err;
     }
 };

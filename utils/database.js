@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS weather_data (
     timestamp TIMESTAMPTZ
 )`;
 
+
 pool.query(createTableQuery, (err) => {
     if (err) {
         console.error('Error creating weather_data table:', err);
