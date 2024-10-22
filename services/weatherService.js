@@ -1,4 +1,5 @@
 const db = require('../utils/database');
+const  weatherSummaryService=require('./weatherSummaryService')
 
 // Function to store weather data in the database
 exports.storeWeatherData = async (city, weatherData) => {
@@ -13,6 +14,7 @@ exports.storeWeatherData = async (city, weatherData) => {
         // Insert data into the database
         await db.query(query, [city, temp, feels_like, condition, new Date(timestamp * 1000)]);
         console.log(`Weather data for ${city} inserted successfully.`);
+        await weatherSummaryService.storeDailyWeatherSummary();
     } catch (err) {
         console.error(`Error storing weather data for ${city}:`, err);
         throw err; 
