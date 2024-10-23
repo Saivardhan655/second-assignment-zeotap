@@ -1,20 +1,10 @@
 const db = require('../utils/database');
 const weatherSummaryService = require('./weatherSummaryService');
-const weeklyWeatherSummaryService = require('./weeklyWeatherSummaryService');
-const monthlyWeatherSummaryService = require('./monthlyWeatherSummaryService');
-const { Kafka } = require('kafkajs');
 const nodemailer = require('nodemailer'); // For email alerts
-
-const kafka = new Kafka({
-    clientId: 'weather-app',
-    brokers: [process.env.KAFKA_BROKERS]
-});
-
-const producer = kafka.producer();
 
 // Store user-configurable alert thresholds (e.g., temp > 35°C for 2 consecutive updates)
 const alertConfig = {
-    temperatureThreshold: 35, // degrees Celsius
+    temperatureThreshold: 15, // degrees Celsius
     consecutiveUpdates: 2
 };
 
@@ -37,23 +27,12 @@ exports.storeWeatherData = async (city, weatherData) => {
         // Check if the threshold for temperature is breached
         checkTemperatureAlert(city, temp);
 
-        // Store daily summary and send Kafka messages
+        // Store daily summary
         await weatherSummaryService.storeDailyWeatherSummary();
-        await producer.connect();
-        await producer.send({
-            topic: 'weather-summary',
-            messages: [
-                { value: JSON.stringify({ city, action: 'updateWeekly' }) },
-                { value: JSON.stringify({ city, action: 'updateMonthly' }) }
-            ],
-        });
-        console.log(`Kafka messages sent for ${city} to update weekly and monthly summaries.`);
 
     } catch (err) {
         console.error(`Error storing weather data for ${city}:`, err);
         throw err;
-    } finally {
-        await producer.disconnect();
     }
 };
 
@@ -92,14 +71,14 @@ async function sendEmailAlert(city, temp) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.EMAIL_USER, // Your email address
-            pass: process.env.EMAIL_PASS  // Your email password
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
         }
     });
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: 'alert@example.com', // Recipient email
+        to: 'saivardhan9154@gmail.com',
         subject: `Weather Alert for ${city}`,
         text: `Temperature in ${city} has exceeded ${alertConfig.temperatureThreshold}°C for ${alertConfig.consecutiveUpdates} consecutive updates. Current temp: ${temp}°C`
     };

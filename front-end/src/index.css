@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* src/index.css or src/App.css */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #1e88e5;
+  margin-bottom: 20px;
+}
+
+h2 {
+  text-align: center;
+  color: #555;
+}
+
+.dashboard-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.component-container {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fafafa;
+}
+
+.select-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.select-container select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  width: 48%; /* Adjust width for select dropdowns */
+}
+
+.chart-container {
+  position: relative;
+  height: 400px; /* Adjust height as necessary */
+  width: 100%; /* Make chart responsive */
+}
+
+.weather-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weather-summary p {
+  margin: 0;
+  font-size: 1rem;
+}

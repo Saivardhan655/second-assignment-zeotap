@@ -1,7 +1,9 @@
-// server.js
 const express = require('express');
 const { Pool } = require('pg');
 const app = express();
+const cors = require('cors');
+// app.use(bodyParser.json());
+app.use(cors());
 
 // Set up PostgreSQL connection pool
 const pool = new Pool({
@@ -24,11 +26,16 @@ app.get('/', async (req, res) => {
   }
 });
 const weatherRoutes = require('./routes/weatherRoutes');
-const example=require('./example')
-const updateWeatherData=require('./services/weather_data')
+const presentRoutes=require('./routes/presentWeather');
+const rollupRoute=require('./routes/weatherData');
+const updateWeatherData=require('./services/weather_data');
 updateWeatherData();
+
 app.use('/api', weatherRoutes);
-app.use('/e',example)
+// Use the route for present weather
+app.use('/present', presentRoutes);
+app.use('/rollup', rollupRoute)
+
 // Start the server
 const PORT = 3000;
 app.listen(PORT, () => {

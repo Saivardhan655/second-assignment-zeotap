@@ -1,4 +1,4 @@
-const weatherService = require('../services/weatherService');
+const weatherService= require('../services/weatherService');
 
 exports.getDailySummary = async (req, res) => {
     const city = req.params.city;
