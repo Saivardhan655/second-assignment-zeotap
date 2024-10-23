@@ -1,12 +1,11 @@
 const axios = require('axios');
-
 const API_KEY = process.env.API_KEY;
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 // Controller to get the present weather data for a city
 exports.getPresentWeather = async (req, res) => {
     const city = req.params.city;
-
+    console.log(API_KEY)
     try {
         // Fetch weather data from OpenWeatherMap API
         const response = await axios.get(API_URL, {
@@ -18,19 +17,20 @@ exports.getPresentWeather = async (req, res) => {
         });
 
         if (response.status === 200) {
-            const weatherData = {
-                city: "Hyderabad",
-                temp: 22.73,
-                feels_like: 23.51,
-                condition: "broken clouds",
-                timestamp: new Date(1729625061 * 1000).toString() // Convert to milliseconds and then create Date
-            };
-            
-            // Output the weatherData
-            console.log(weatherData);
-            
+            const weatherData = response.data;
 
-            return res.json(weatherData);  // Send weather data to the frontend
+            const formattedWeatherData = {
+                city: weatherData.name,
+                temp: weatherData.main.temp,
+                feels_like: weatherData.main.feels_like,
+                condition: weatherData.weather[0].description,
+                timestamp: new Date(weatherData.dt * 1000).toString() // Convert to milliseconds and format the date
+            };
+
+            // Output the weather data
+            console.log(formattedWeatherData);
+
+            return res.json(formattedWeatherData); // Send weather data to the frontend
         } else {
             return res.status(response.status).json({ message: `Failed to fetch weather data for ${city}` });
         }

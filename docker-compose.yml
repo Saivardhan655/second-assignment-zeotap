@@ -1,11 +1,18 @@
 version: '3'
 services:
+  frontend_app:
+    build: ./front-end
+    ports:
+      - "5000:5000"
+    networks:
+      - my_network
+
   backend_app:
-    build: .
+    build: ./backend
     ports:
       - "3000:3000"
     environment:
-      - DB_HOST=second_assignment-database-1
+      - DB_HOST=database
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres

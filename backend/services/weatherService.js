@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer'); // For email alerts
 
 // Store user-configurable alert thresholds (e.g., temp > 35°C for 2 consecutive updates)
 const alertConfig = {
-    temperatureThreshold: 15, // degrees Celsius
+    temperatureThreshold: 35, // degrees Celsius
     consecutiveUpdates: 2
 };
 
