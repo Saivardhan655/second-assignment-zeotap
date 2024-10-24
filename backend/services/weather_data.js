@@ -1,10 +1,11 @@
 const axios = require('axios');
 const weatherService = require('./weatherService');
+const cron = require('node-cron');
 
 const API_KEY = process.env.API_KEY;
-const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+const API_URL =process.env.API_URL;
 
-const cities = ['Hyderabad', 'Delhi', 'Bengaluru', 'Chennai', 'Mumbai'];
+const cities = ['Hyderabad', 'Delhi', 'Bengaluru', 'Chennai', 'Mumbai','Kolkata'];
 
 // Function to fetch weather data for a city
 const fetchWeatherData = async (city) => {
@@ -44,6 +45,7 @@ const updateWeatherData = async () => {
 };
 
 // Fetch weather data every 5 minutes
-setInterval(updateWeatherData, 5 * 60 * 1000);
+cron.schedule('*/5 * * * *', updateWeatherData);
+
 
 module.exports = updateWeatherData;

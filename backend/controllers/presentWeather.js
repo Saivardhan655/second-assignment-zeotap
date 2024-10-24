@@ -1,6 +1,6 @@
 const axios = require('axios');
 const API_KEY = process.env.API_KEY;
-const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+const API_URL = process.env.API_URL
 
 // Controller to get the present weather data for a city
 exports.getPresentWeather = async (req, res) => {
@@ -24,7 +24,7 @@ exports.getPresentWeather = async (req, res) => {
                 temp: weatherData.main.temp,
                 feels_like: weatherData.main.feels_like,
                 condition: weatherData.weather[0].description,
-                timestamp: new Date(weatherData.dt * 1000).toString() // Convert to milliseconds and format the date
+                timestamp: new Date(weatherData.dt * 1000).toString()
             };
 
             // Output the weather data

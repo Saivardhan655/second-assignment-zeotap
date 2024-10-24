@@ -1,0 +1,35 @@
+/* Footer.css */
+.footer {
+    background-color: transparent; /* Make the background match the page */
+    color: #333; /* Change the font color to a dark grey for readability */
+    text-align: center;
+    padding: 0.2em 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-bottom: 0.7em;
+  }
+  
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .footer-content p {
+    margin: 0;
+    font-size: 1rem;
+    color: #666; /* Slightly lighter grey for the text */
+  }
+  
+  @media (max-width: 768px) {
+    .footer-content {
+      flex-direction: column;
+    }
+    .footer-content p {
+      margin-bottom: 0.5rem;
+    }
+  }
+  

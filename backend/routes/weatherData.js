@@ -16,7 +16,7 @@ const formatDate = (date) => {
   return date.toISOString().split('T')[0]; // Returns date in YYYY-MM-DD format
 };
 
-// Get weather data for today, yesterday, or the day before yesterday for a specific city
+// Get weather data for today, yesterday, or last week for a specific city
 router.get('/weather/daily', async (req, res) => {
   const city = req.query.city; // Get city from query parameters
   const day = req.query.date;  // Get date filter from query parameters (today, yesterday, etc.)
@@ -24,35 +24,42 @@ router.get('/weather/daily', async (req, res) => {
   if (!city) {
     return res.status(400).json({ error: 'City parameter is required' });
   }
-  
-  if (!day || !['today', 'yesterday', 'dayBeforeYesterday'].includes(day)) {
-    return res.status(400).json({ error: 'Valid date parameter is required (today, yesterday, dayBeforeYesterday)' });
-  }
 
-  // Determine the selected date based on the day parameter
-  let selectedDate;
+  let startDate, endDate;
+
+  // Determine the selected date range based on the `day` parameter
   if (day === 'today') {
-    selectedDate = formatDate(new Date());
+    startDate = formatDate(new Date());
+    endDate = startDate;
   } else if (day === 'yesterday') {
-    selectedDate = formatDate(new Date(Date.now() - 86400000)); // 24 hours in milliseconds
+    startDate = formatDate(new Date(Date.now() - 86400000)); // 24 hours in milliseconds
+    endDate = startDate;
   } else if (day === 'dayBeforeYesterday') {
-    selectedDate = formatDate(new Date(Date.now() - 2 * 86400000)); // 48 hours in milliseconds
+    startDate = formatDate(new Date(Date.now() - 2 * 86400000)); // 48 hours in milliseconds
+    endDate = startDate;
+  } else if (day === 'lastweek') {
+    endDate = formatDate(new Date()); // Today's date
+    startDate = formatDate(new Date(Date.now() - 7 * 86400000)); // 7 days ago
+  } else {
+    return res.status(400).json({ error: 'Valid date parameter is required (today, yesterday, dayBeforeYesterday, lastweek)' });
   }
 
   try {
     const query = `
-    SELECT 
-      date_trunc('hour', timestamp) as hour,  -- Truncate timestamp to the hour
-      AVG(temp) as avg_temp,                  -- Calculate average temperature
-      AVG(feels_like) as avg_feels_like,      -- Calculate average feels-like temperature
-      COUNT(*) as count,                      -- Optional: count of data points in the hour
-      MAX(condition) as condition             -- Assume latest condition is the most relevant
-    FROM weather_data
-    WHERE timestamp::date = $1 AND city = $2
-    GROUP BY date_trunc('hour', timestamp)
-    ORDER BY hour;
-  `;
-    const result = await pool.query(query, [selectedDate, city]);
+      SELECT 
+        date_trunc('day', timestamp) as day,  -- Group by day for last week or specific day
+        AVG(temp) as avg_temp,                -- Calculate average temperature
+        AVG(feels_like) as avg_feels_like,    -- Calculate average feels-like temperature
+        MAX(temp) as max_temp,                -- Maximum temperature of the day
+        MIN(temp) as min_temp,                -- Minimum temperature of the day
+        MAX(condition) as condition           -- Assume latest condition is the most relevant
+      FROM weather_data
+      WHERE timestamp::date BETWEEN $1 AND $2 AND city = $3
+      GROUP BY day
+      ORDER BY day;
+    `;
+    
+    const result = await pool.query(query, [startDate, endDate, city]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);

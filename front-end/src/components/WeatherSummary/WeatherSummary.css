@@ -1,0 +1,49 @@
+/* src/components/WeatherSummary.css */
+.weather-summary-container {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    max-width: 80vw; /* Increase the width to 80% of the parent */
+    height: 100%;
+    margin: auto; /* Center the container */
+
+    text-align: left;
+}
+
+.weather-summary-container h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.weather-summary-container p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+.weather-summary-container p strong {
+    color: #333;
+}
+
+.weather-summary-container p {
+    display: flex;
+    justify-content: space-between;
+}
+
+.loading-text {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+/* Optional: Add responsiveness for smaller screens */
+@media (max-width: 768px) {
+    .weather-summary-container {
+        max-width: 100%; /* Full width on smaller screens */
+        padding: 1rem; /* Adjust padding */
+    }
+}

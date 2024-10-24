@@ -19,7 +19,8 @@
     "kafkajs": "^2.2.4",
     "nodemailer": "^6.9.15",
     "pg": "^8.13.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "node-cron": "^3.0.0"
   },
   "description": ""
 }
