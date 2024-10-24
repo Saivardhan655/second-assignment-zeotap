@@ -6,23 +6,36 @@ const PresentWeather = ({ selectedCity }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchPresentWeather = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:3000/present/weather/${selectedCity}`);
-        setPresentData(response.data);
-      } catch (err) {
-        setError('Error fetching present weather data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPresentWeather = async () => {
+    if (!selectedCity) return; // Avoid fetching if no city is selected
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:3000/present/weather/${selectedCity}`, {
+        params: { _: new Date().getTime() } // Add a timestamp to avoid caching
+      });
+      console.log("Fetched data:", response.data); // Log the fetched data
 
-    if (selectedCity) {
-      fetchPresentWeather();
+      // Update state only if the new data is different
+      if (JSON.stringify(response.data) !== JSON.stringify(presentData)) {
+        setPresentData(response.data);
+      }
+    } catch (err) {
+      setError('Error fetching present weather data');
+    } finally {
+      setLoading(false);
     }
-  }, [selectedCity]);
+  };
+
+  useEffect(() => {
+    fetchPresentWeather(); // Initial fetch
+
+    const intervalId = setInterval(() => {
+      fetchPresentWeather(); // Fetch every minute
+    }, 60000); // 60000 milliseconds = 1 minute
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [selectedCity]); // Fetch when selectedCity changes
 
   if (loading) {
     return <p className="text-center text-blue-600">Loading present weather data...</p>;
