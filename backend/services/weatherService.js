@@ -1,6 +1,7 @@
 const db = require('../utils/database');
 const weatherSummaryService = require('./weatherSummaryService');
 const nodemailer = require('nodemailer'); // For email alerts
+const { checkWeatherConditions } = require('../controllers/alertsLogic')
 
 // Store user-configurable alert thresholds (e.g., temp > 35°C for 2 consecutive updates)
 const alertConfig = {
@@ -13,7 +14,8 @@ let consecutiveBreaches = {}; // Store count of breaches per city
 // Function to store weather data in the database
 exports.storeWeatherData = async (city, weatherData) => {
     const { temp, feels_like, condition, timestamp } = weatherData;
-
+    console.log(`service: weatherService :  ${weatherData}`)
+    
     const query = `
         INSERT INTO weather_data (city, temp, feels_like, condition, timestamp)
         VALUES ($1, $2, $3, $4, $5)
@@ -23,12 +25,13 @@ exports.storeWeatherData = async (city, weatherData) => {
         // Insert data into the database
         await db.query(query, [city, temp, feels_like, condition, new Date(timestamp * 1000)]);
         console.log(`Weather data for ${city} inserted successfully.`);
-
+        
         // Check if the threshold for temperature is breached
-        checkTemperatureAlert(city, temp);
-
-        // Store daily summary
         await weatherSummaryService.storeDailyWeatherSummary();
+        
+        // Store daily summary
+        const alert = checkWeatherConditions(city, weatherData);
+        await weatherSummaryService.storeAlertData(alert);
 
     } catch (err) {
         console.error(`Error storing weather data for ${city}:`, err);
@@ -36,26 +39,7 @@ exports.storeWeatherData = async (city, weatherData) => {
     }
 };
 
-// Function to check temperature alert threshold and trigger alerts
-function checkTemperatureAlert(city, temp) {
-    // Initialize breach count for the city if it doesn't exist
-    if (!consecutiveBreaches[city]) {
-        consecutiveBreaches[city] = 0;
-    }
 
-    // Check if the temperature exceeds the threshold
-    if (temp > alertConfig.temperatureThreshold) {
-        consecutiveBreaches[city]++;
-
-        // Trigger alert if the threshold is breached for consecutive updates
-        if (consecutiveBreaches[city] >= alertConfig.consecutiveUpdates) {
-            triggerAlert(city, temp);
-        }
-    } else {
-        // Reset the breach count if temperature goes below threshold
-        consecutiveBreaches[city] = 0;
-    }
-}
 
 // Function to trigger alert (can be expanded to send emails)
 function triggerAlert(city, temp) {

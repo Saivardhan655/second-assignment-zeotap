@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ReactLoading from 'react-loading'; // Import loading spinner
+
 import {
   Chart as ChartJS,
   LineElement,
@@ -10,10 +12,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2'; // Import Line instead of Bar
-import './WeatherRollupData.css'; // Import the CSS file
+import { Line } from 'react-chartjs-2';
+import './WeatherRollupData.css';
 
-// Register the required components for Chart.js
 ChartJS.register(
   LineElement,
   PointElement,
@@ -27,7 +28,6 @@ ChartJS.register(
 const API_URL = process.env.REACT_APP_API_URL;
 
 const WeatherData = ({ selectedCity, selectedDate }) => {
-  // console.log(selectedCity, selectedDate);
   const [weatherData, setWeatherData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,11 +37,13 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
     setError(null);
     try {
       const response = await axios.get(
-        `${API_URL}/rollup/weather/daily`, {
+        `${API_URL}/rollup/weather/hourly`, {
           params: { city: selectedCity, date: selectedDate }
         }
       );
+      // console.log(response);
       
+      // Check if data is in the expected format
       if (response.data && Array.isArray(response.data)) {
         setWeatherData(response.data);
       } else {
@@ -62,13 +64,10 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
 
   // Prepare the data for the line chart
   const chartData = {
-    labels: weatherData.map((data) =>
-      new Date(data.hour).toLocaleString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
-    ),
+    labels: weatherData.map((data) => {
+      const date = new Date(data.hour); // Assuming your API returns 'hour' as the timestamp
+      return `${date.getHours()}:00`; // Format the hour for the label
+    }),
     datasets: [
       {
         label: 'Avg Temperature (°C)',
@@ -76,7 +75,7 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
         backgroundColor: 'rgba(54, 162, 235, 0.5)', // Blue area under the line
         borderColor: 'rgba(54, 162, 235, 1)', // Blue line
         borderWidth: 2,
-        fill: true, // Fill the area under the line
+        fill: true,
       },
       {
         label: 'Avg Feels Like (°C)',
@@ -84,7 +83,7 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
         backgroundColor: 'rgba(255, 99, 132, 0.5)', // Red area under the line
         borderColor: 'rgba(255, 99, 132, 1)', // Red line
         borderWidth: 2,
-        fill: true, // Fill the area under the line
+        fill: true,
       },
     ],
   };
@@ -96,6 +95,7 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
           display: true,
           text: 'Hour',
         },
+        type: 'category', // Set x-axis to categorical
       },
       y: {
         title: {
@@ -103,14 +103,19 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
           text: 'Temperature (°C)',
         },
         beginAtZero: false,
-        min: 20,  // Set minimum value for y-axis
-        max: 40,  // Set maximum value for y-axis
+        min: 20,
+        max: 40,
       },
     },
   };
 
   if (loading) {
-    return <p className="loading-text">Loading weather data...</p>;
+    return (
+      <div className="loading-container">
+        <ReactLoading type="spin" color="#007bff" height={50} width={50} />
+        <p className="loading-text">Loading present weather data...</p>
+      </div>
+    );
   }
 
   if (error) {
@@ -119,11 +124,11 @@ const WeatherData = ({ selectedCity, selectedDate }) => {
 
   return (
     <div className="weather-data-container">
-      <h1 className="city-title">{selectedCity}</h1>
+      <h1 className="city-title">daily Rollup {selectedCity}</h1>
 
       {weatherData.length > 0 ? (
         <div className="chart-container">
-          <Line data={chartData} options={chartOptions} /> {/* Use Line component */}
+          <Line data={chartData} options={chartOptions} />
         </div>
       ) : (
         <p className="no-data-text">No data available for the selected city and date.</p>

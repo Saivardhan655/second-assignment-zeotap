@@ -43,3 +43,42 @@ exports.storeDailyWeatherSummary = async () => {
     }
 };
 
+
+exports.storeAlertData = async (alerts) => {
+    if (!alerts || !Array.isArray(alerts) || alerts.length === 0) {
+        console.log('\x1b[31mNo alerts to store.\x1b[0m');
+        return; // Exit if there are no alerts
+    }
+    
+    for (const alert of alerts) {
+        const { city, alert_type, description, severity } = alert;
+        
+        const issuedAt = new Date();
+        const expiresAt = new Date(issuedAt.getTime() + 2 * 60 * 60 * 1000);
+
+        console.log('Alert Data:', {
+            city,
+            alert_type,
+            description,
+            severity,
+            issuedAt: issuedAt.toISOString(),
+            expiresAt: expiresAt.toISOString(),
+        });
+
+        const insertQuery = `
+            INSERT INTO weather_alerts (city, alert_type, description, severity, issued_at, expires_at) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `;
+        const values = [city, alert_type, description, severity, issuedAt, expiresAt];
+
+        try {
+            const result = await db.query(insertQuery, values);
+            console.log('\x1b[32mAlert inserted:\x1b[0m', result.rows[0]);
+
+        } catch (err) {
+            console.error('Error inserting alert:', err);
+        }
+    }
+};
+

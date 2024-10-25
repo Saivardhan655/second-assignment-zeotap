@@ -1,13 +1,20 @@
 const express = require('express');
 const { Pool } = require('pg');
-const app = express();
 const cors = require('cors');
-// app.use(bodyParser.json());
+const bodyParser = require('body-parser');
+const weatherRoutes = require('./routes/weatherRoutes');
+const presentRoutes = require('./routes/presentWeather');
+const rollupRoute = require('./routes/weatherData');
+const alertRoutes = require('./routes/alertRoute'); // Import the alert routes
+const updateWeatherData = require('./services/weather_data');
+
+// Initialize express app
+const app = express();
 app.use(cors());
+app.use(bodyParser.json()); // Middleware to parse JSON request bodies
 
 // Set up PostgreSQL connection pool
 const pool = new Pool({
-
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
@@ -15,7 +22,7 @@ const pool = new Pool({
   database: process.env.DB_NAME,
 });
 
-// route to test database connection
+// Route to test database connection
 app.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -25,19 +32,18 @@ app.get('/', async (req, res) => {
     res.status(500).json({ error: 'Database connection failed' });
   }
 });
-const weatherRoutes = require('./routes/weatherRoutes');
-const presentRoutes=require('./routes/presentWeather');
-const rollupRoute=require('./routes/weatherData');
-const updateWeatherData=require('./services/weather_data');
+
+// Update weather data (presumably a scheduled task)
 updateWeatherData();
 
+// Use defined routes
 app.use('/api', weatherRoutes);
-// Use the route for present weather
 app.use('/present', presentRoutes);
-app.use('/rollup', rollupRoute)
+app.use('/rollup', rollupRoute);
+app.use('/api/alerts', alertRoutes);
 
 // Start the server
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Use environment variable for port
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

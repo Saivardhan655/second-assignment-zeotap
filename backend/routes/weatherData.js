@@ -16,33 +16,46 @@ const formatDate = (date) => {
   return date.toISOString().split('T')[0]; // Returns date in YYYY-MM-DD format
 };
 
+// Helper function to get date range for queries
+const getDateRange = (day) => {
+  const today = new Date();
+  let startDate, endDate;
+
+  switch (day) {
+    case 'today':
+      startDate = endDate = formatDate(today);
+      break;
+    case 'yesterday':
+      startDate = endDate = formatDate(new Date(today - 86400000)); // 24 hours ago
+      break;
+    case 'dayBeforeYesterday':
+      startDate = endDate = formatDate(new Date(today - 2 * 86400000)); // 48 hours ago
+      break;
+    case 'lastweek':
+      endDate = formatDate(today); // Today's date
+      startDate = formatDate(new Date(today - 7 * 86400000)); // 7 days ago
+      break;
+    default:
+      return null; // Invalid day
+  }
+  return { startDate, endDate };
+};
+
 // Get weather data for today, yesterday, or last week for a specific city
 router.get('/weather/daily', async (req, res) => {
   const city = req.query.city; // Get city from query parameters
-  const day = req.query.date;  // Get date filter from query parameters (today, yesterday, etc.)
+  const day = req.query.date; // Get date filter from query parameters
 
   if (!city) {
     return res.status(400).json({ error: 'City parameter is required' });
   }
 
-  let startDate, endDate;
-
-  // Determine the selected date range based on the `day` parameter
-  if (day === 'today') {
-    startDate = formatDate(new Date());
-    endDate = startDate;
-  } else if (day === 'yesterday') {
-    startDate = formatDate(new Date(Date.now() - 86400000)); // 24 hours in milliseconds
-    endDate = startDate;
-  } else if (day === 'dayBeforeYesterday') {
-    startDate = formatDate(new Date(Date.now() - 2 * 86400000)); // 48 hours in milliseconds
-    endDate = startDate;
-  } else if (day === 'lastweek') {
-    endDate = formatDate(new Date()); // Today's date
-    startDate = formatDate(new Date(Date.now() - 7 * 86400000)); // 7 days ago
-  } else {
+  const dateRange = getDateRange(day);
+  if (!dateRange) {
     return res.status(400).json({ error: 'Valid date parameter is required (today, yesterday, dayBeforeYesterday, lastweek)' });
   }
+
+  const { startDate, endDate } = dateRange;
 
   try {
     const query = `
@@ -62,7 +75,44 @@ router.get('/weather/daily', async (req, res) => {
     const result = await pool.query(query, [startDate, endDate, city]);
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching daily weather data:', err);
+    res.status(500).json({ error: 'Error fetching weather data' });
+  }
+});
+
+router.get('/weather/hourly', async (req, res) => {
+  const city = req.query.city; 
+  const day = req.query.date; 
+
+  if (!city) {
+    return res.status(400).json({ error: 'City parameter is required' });
+  }
+  
+  if (!day || !['today', 'yesterday', 'dayBeforeYesterday'].includes(day)) {
+    return res.status(400).json({ error: 'Valid date parameter is required (today, yesterday, dayBeforeYesterday)' });
+  }
+
+  // Determine the selected date based on the day parameter
+  const selectedDate = formatDate(new Date(Date.now() - (day === 'yesterday' ? 86400000 : (day === 'dayBeforeYesterday' ? 2 * 86400000 : 0))));
+
+  try {
+    const query = `
+      SELECT 
+        date_trunc('hour', timestamp) as hour,  -- Truncate timestamp to the hour
+        AVG(temp) as avg_temp,                  -- Calculate average temperature
+        AVG(feels_like) as avg_feels_like,      -- Calculate average feels-like temperature
+        COUNT(*) as count,                      -- Optional: count of data points in the hour
+        MAX(condition) as condition             -- Assume latest condition is the most relevant
+      FROM weather_data
+      WHERE timestamp::date = $1 AND city = $2
+      GROUP BY date_trunc('hour', timestamp)
+      ORDER BY hour;
+    `;
+    
+    const result = await pool.query(query, [selectedDate, city]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching hourly weather data:', err);
     res.status(500).json({ error: 'Error fetching weather data' });
   }
 });

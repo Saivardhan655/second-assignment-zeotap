@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { WiDaySunny, WiCloudy, WiRain, WiSnow, WiThunderstorm } from 'react-icons/wi'; // Weather Icons
+import ReactLoading from 'react-loading'; // Import loading spinner
 import './PresentWeather.css';
+import { celsiusToKelvin, celsiusToFahrenheit } from '../../utils/temperatureConvertion';
 
-const API_URL = process.env.REACT_APP_API_URL; // Assuming you're using create-react-app
+const API_URL = process.env.REACT_APP_API_URL;
 
-const PresentWeather = ({ selectedCity }) => {
+const PresentWeather = ({ selectedCity, selectedTemp }) => {
   const [presentData, setPresentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tempUnit, setTempUnit] = useState('C'); // Default to 'C'
 
   useEffect(() => {
     const fetchPresentWeather = async () => {
       try {
-        console.log(selectedCity)
         setLoading(true);
         const response = await axios.get(`${API_URL}/present/weather/${selectedCity}`);
-        // console.log(response);
+        // console.log(response.data)
         setPresentData(response.data);
       } catch (err) {
         setError('Error fetching present weather data');
@@ -29,6 +31,23 @@ const PresentWeather = ({ selectedCity }) => {
       fetchPresentWeather();
     }
   }, [selectedCity]);
+
+  useEffect(() => {
+    // Update the tempUnit whenever selectedTemp changes
+    switch (selectedTemp) {
+      case 'C':
+        setTempUnit('C');
+        break;
+      case 'F':
+        setTempUnit('F');
+        break;
+      case 'K':
+        setTempUnit('K');
+        break;
+      default:
+        setTempUnit('C');
+    }
+  }, [selectedTemp]);
 
   const getWeatherIcon = (condition) => {
     if (!condition) {
@@ -50,8 +69,25 @@ const PresentWeather = ({ selectedCity }) => {
     }
   };
 
+  const convertTemperature = (temp) => {
+    switch (tempUnit) {
+      case 'K':
+        return celsiusToKelvin(temp).toFixed(2);
+      case 'F':
+        return celsiusToFahrenheit(temp).toFixed(2);
+      case 'C':
+      default:
+        return temp.toFixed(2);
+    }
+  };
+
   if (loading) {
-    return <p className="loading-text">Loading present weather data...</p>;
+    return (
+      <div className="loading-container">
+        <ReactLoading type="spin" color="#007bff" height={50} width={50} />
+        <p className="loading-text">Loading present weather data...</p>
+      </div>
+    );
   }
 
   if (error) {
@@ -62,8 +98,9 @@ const PresentWeather = ({ selectedCity }) => {
     return <p className="no-data-text">No present weather data available.</p>;
   }
 
-  const temp = presentData.temp !== undefined ? presentData.temp.toFixed(2) : 'N/A';
-  const feelsLike = presentData.feels_like !== undefined ? presentData.feels_like.toFixed(2) : 'N/A';
+  const temp = presentData.max_temp !== undefined ? convertTemperature(presentData.max_temp) : 'N/A';
+  // console.log(temp)
+  const feelsLike = presentData.feels_like !== undefined ? convertTemperature(presentData.feels_like) : 'N/A';
 
   return (
     <div className="weather-card">
@@ -72,8 +109,8 @@ const PresentWeather = ({ selectedCity }) => {
         {getWeatherIcon(presentData.condition)}
       </div>
       <div className="weather-details">
-        <p className="temperature">{temp}°C</p>
-        <p className="feels-like">Feels like {feelsLike}°C</p>
+        <p className="temperature">{temp}°{tempUnit}</p>
+        <p className="feels-like">Feels like {feelsLike}°{tempUnit}</p>
         <p className="condition">{presentData.condition}</p>
         <p className="timestamp">{new Date(presentData.timestamp).toLocaleString()}</p>
       </div>
