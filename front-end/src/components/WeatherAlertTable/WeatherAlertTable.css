@@ -1,43 +1,40 @@
-/* src/components/WeatherAlertTable/WeatherAlertTable.css */
-
 .weather-alert-table-container {
-    width: 100%; /* Ensure full width */
-    background-color: #f9f9f9; /* Light background */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    box-sizing: border-box; /* Include padding in width calculation */
+    width: 100%;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .weather-alert-table {
-    width: 100%; /* Full width of the container */
-    border-collapse: collapse; /* Collapsed borders for cleaner look */
-    text-align: left; /* Left-aligned text */
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left; 
 }
 
 .weather-alert-table th,
 .weather-alert-table td {
-    padding: 0.75rem 1rem; /* Padding for table cells */
-    border-bottom: 1px solid #ddd; /* Light gray border for rows */
+    padding: 0.75rem 1rem; 
+    border-bottom: 1px solid #ddd; 
 }
 
 .weather-alert-table th {
-    background: linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71)); /* Gradient header */
-    color: white; /* White text for header */
+    background: linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71));
+    color: white;
 }
 
 .weather-alert-table tr:hover {
-    background-color: #f1f1f1; /* Light gray background on hover */
+    background-color: #f1f1f1;
 }
 
 .weather-alert-table td {
-    color: #333; /* Dark gray text for cells */
+    color: #333;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .weather-alert-table th,
     .weather-alert-table td {
-        padding: 0.5rem; /* Reduce padding for smaller screens */
-        font-size: 0.875rem; /* Smaller font size */
+        padding: 0.5rem; 
+        font-size: 0.875rem; 
     }
 }

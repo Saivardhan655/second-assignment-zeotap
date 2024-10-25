@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { WiDaySunny, WiCloudy, WiRain, WiSnow, WiThunderstorm } from 'react-icons/wi'; // Weather Icons
-import ReactLoading from 'react-loading'; // Import loading spinner
+import { WiDaySunny, WiCloudy, WiRain, WiSnow, WiThunderstorm } from 'react-icons/wi';
+import ReactLoading from 'react-loading';
 import './PresentWeather.css';
 import { celsiusToFahrenheit } from '../../utils/temperatureConvertion';
 
@@ -33,7 +33,6 @@ const PresentWeather = ({ selectedCity, selectedTemp }) => {
   }, [selectedCity]);
 
   useEffect(() => {
-    // Update the tempUnit whenever selectedTemp changes
     switch (selectedTemp) {
       case 'C':
         setTempUnit('C');

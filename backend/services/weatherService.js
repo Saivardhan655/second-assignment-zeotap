@@ -1,6 +1,6 @@
 const db = require('../utils/database');
 const weatherSummaryService = require('./weatherSummaryService');
-const nodemailer = require('nodemailer'); // For email alerts
+const nodemailer = require('nodemailer');
 const { checkWeatherConditions } = require('../controllers/alertsLogic')
 
 // Store user-configurable alert thresholds (e.g., temp > 35°C for 2 consecutive updates)
@@ -9,7 +9,7 @@ const alertConfig = {
     consecutiveUpdates: 2
 };
 
-let consecutiveBreaches = {}; // Store count of breaches per city
+
 
 // Function to store weather data in the database
 exports.storeWeatherData = async (city, weatherData) => {

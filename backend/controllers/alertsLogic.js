@@ -11,9 +11,9 @@ const getRecentWeatherData = async (city) => {
     LIMIT 1;
     `;
     
-    // Assuming db.query returns an object with a 'rows' property
+    
     const result = await db.query(query, [city]);
-    return result.rows[0]; // Return the most recent weather record
+    return result.rows[0]; //returns the most frequent rrecord from the databaes
 };
 
 

@@ -1,8 +1,8 @@
 // src/components/WeatherAlertTable/WeatherAlertTable.js
 import React, { useEffect, useState } from 'react';
 import './WeatherAlertTable.css';
-import ReactLoading from 'react-loading'; // Import loading spinner
-import axios from 'axios'; // Import axios for API requests
+import ReactLoading from 'react-loading';
+import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
