@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2'; // Keep using Line for area chart
+import { Line } from 'react-chartjs-2'; // Line chart  from area chart
 import { WiDaySunny, WiCloudy, WiRain, WiThunderstorm } from 'react-icons/wi'; // Import weather icons
-import './AllWeatherRollup.css'; // Optional for styling
+import './AllWeatherRollup.css';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -34,7 +34,7 @@ const WeatherComponent = ({ selectedCity }) => {
 
     useEffect(() => {
         if (weatherData && weatherData.length > 0) {
-            const dates = weatherData.map((item) => item.day.split('T')[0]); // Extract date in YYYY-MM-DD format
+            const dates = weatherData.map((item) => item.day.split('T')[0]); // Extracted date in YYYY-MM-DD format
             const avgTemps = weatherData.map((item) => item.avg_temp);
 
             setChartData({

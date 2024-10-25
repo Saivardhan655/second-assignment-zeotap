@@ -3,7 +3,7 @@ import axios from 'axios';
 import { WiDaySunny, WiCloudy, WiRain, WiSnow, WiThunderstorm } from 'react-icons/wi'; // Weather Icons
 import ReactLoading from 'react-loading'; // Import loading spinner
 import './PresentWeather.css';
-import { celsiusToKelvin, celsiusToFahrenheit } from '../../utils/temperatureConvertion';
+import { celsiusToFahrenheit } from '../../utils/temperatureConvertion';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -71,8 +71,7 @@ const PresentWeather = ({ selectedCity, selectedTemp }) => {
 
   const convertTemperature = (temp) => {
     switch (tempUnit) {
-      case 'K':
-        return celsiusToKelvin(temp).toFixed(2);
+
       case 'F':
         return celsiusToFahrenheit(temp).toFixed(2);
       case 'C':

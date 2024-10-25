@@ -36,9 +36,15 @@ const App = () => {
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
+  const handleTemperatureChange = (celsiusUnit) => {
+    setSelectedTemp(celsiusUnit ? "C":"F");
+  };
 
-  const handleTemperatureChange = (tempUnit) => {
-    setSelectedTemp(tempUnit.toUpperCase()); // Convert to uppercase for consistency
+  const [isCelsius, setIsCelsius] = useState(true);
+
+  const handleToggle = () => {
+    setIsCelsius(!isCelsius);
+    handleTemperatureChange(isCelsius);
   };
 
   return (
@@ -54,18 +60,20 @@ const App = () => {
             <li onClick={() => handleCityChange("Bangalore")}>Bangalore</li>
             <li onClick={() => handleCityChange("Kolkata")}>Kolkata</li>
           </ul>
-          <div className="side-container-header">Select Temp Unit</div>
+          <div className="side-container-header">Select Day</div>
           <ul className="side-container-menu">
             <li onClick={() => handleDateChange("today")}>Today</li>
             <li onClick={() => handleDateChange("yesterday")}>Yesterday</li>
-            <li onClick={() => handleDateChange("daybeforeyesterday")}>Day Before Yesterday</li>
+            <li onClick={() => handleDateChange("daybeforeyesterday")}>
+              Day Before Yesterday
+            </li>
           </ul>
-          <div className="side-container-header">Select Temp Unit</div>
-          <ul className="side-container-menu">
-            <li onClick={() => handleTemperatureChange("C")}>Celsius</li>
-            <li onClick={() => handleTemperatureChange("F")}>Fahrenheit</li>
-            <li onClick={() => handleTemperatureChange("K")}>Kelvin</li>
-          </ul>
+          <div className="side-container-header">
+            <span>Select Temp Unit</span>
+            <button className="toggle-button" onClick={handleToggle}>
+              {isCelsius ? "Celsius" : "Fahrenheit"}
+            </button>
+          </div>
         </aside>
 
         <main className="main-content">
@@ -74,10 +82,16 @@ const App = () => {
           <div className="grid grid-cols-2 component-row">
             <div className="grid grid-cols-2 component-row">
               <div className="component-container">
-                <PresentWeather selectedCity={selectedCity} selectedTemp={selectedTemp} />
+                <PresentWeather
+                  selectedCity={selectedCity}
+                  selectedTemp={selectedTemp}
+                />
               </div>
               <div className="component-container">
-                <WeatherSummary selectedCity={selectedCity} selectedTemp={selectedTemp}/>
+                <WeatherSummary
+                  selectedCity={selectedCity}
+                  selectedTemp={selectedTemp}
+                />
               </div>
             </div>
             <div className="full-width component-row">

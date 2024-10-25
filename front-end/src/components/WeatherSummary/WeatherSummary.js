@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './WeatherSummary.css'; // Import the styles
-import { celsiusToKelvin, celsiusToFahrenheit } from '../../utils/temperatureConvertion';
+import {  celsiusToFahrenheit } from '../../utils/temperatureConvertion';
 import ReactLoading from 'react-loading'; // Import loading spinner
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -43,8 +43,8 @@ const WeatherSummary = ({ selectedCity, selectedTemp }) => {
     }
 
     switch (tempUnit) {
-      case 'K':
-        return celsiusToKelvin(tempNum).toFixed(2);
+      // case 'K':
+      //   return celsiusToKelvin(tempNum).toFixed(2);
       case 'F':
         return celsiusToFahrenheit(tempNum).toFixed(2);
       case 'C':
