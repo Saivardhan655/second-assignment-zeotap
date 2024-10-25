@@ -74,4 +74,6 @@ createTables();
 // Export query function for use in other parts of the application
 module.exports = {
     query: (text, params) => pool.query(text, params),
+    createTables,
+    pool,
 };
