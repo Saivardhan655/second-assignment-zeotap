@@ -33,7 +33,9 @@ CREATE TABLE IF NOT EXISTS daily_weather_summary (
     dominant_condition TEXT,
     temp_threshold_breached BOOLEAN,
     alerts TEXT,
-    timestamp TIMESTAMPTZ DEFAULT NOW()
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT unique_city_date UNIQUE (city, date)
+
 )`;
 
 // Create alerts table if it doesn't exist
