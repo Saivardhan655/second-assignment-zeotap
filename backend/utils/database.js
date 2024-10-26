@@ -50,6 +50,19 @@ CREATE TABLE IF NOT EXISTS weather_alerts (
     expires_at TIMESTAMPTZ
 )`;
 
+const addUniqueCityDateConstraint = async () => {
+    const query = `
+        ALTER TABLE daily_weather_summary
+        ADD CONSTRAINT unique_city_date UNIQUE (city, date);
+    `;
+    try {
+        await pool.query(query);
+        console.log('Unique constraint on city and date added successfully.');
+    } catch (err) {
+        console.error('Error adding unique constraint:', err);
+    }
+};
+
 // Function to create tables
 const createTables = async () => {
     try {
@@ -64,6 +77,10 @@ const createTables = async () => {
         // Create alerts table
         await pool.query(createAlertsTableQuery);
         console.log('alerts table created or already exists.');
+
+        await pool.query(addUniqueCityDateConstraint);
+        console.log('uniqe city date constrain run successfully');
+
 
     } catch (err) {
         console.error('Error creating tables:', err);
